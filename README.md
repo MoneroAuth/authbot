@@ -3,7 +3,7 @@
 
 The authbot is a self-sovereign identity assistant that utilizes the MoneroAuth protocol. It encapsulates the complexity of public key cryptography and key management away from the user. The authbot application is a program written in python, that integrates two public open source protocols:
 
-[Monero protocol](https://www.getmonero.org/) that is used for public key cryptography and key management in the MoneroAuth protocol.
+[Monero protocol](https://www.getmonero.org/) that is used for public key cryptography and key management.
 
 [Matrix protocol](https://www.getmonero.org/) that is used for decentralized, end-to-end encrypted, messaging.
 
