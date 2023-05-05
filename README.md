@@ -27,4 +27,4 @@ We choose to run authbot only on Linux.
 
 **Installation**
 
-The install.txt file describes specific installation instructions for different authbot deployment targets (PC, VirtualBox virtual machine, cloud vps, and various single-board computers).
+Installation files describing specific installation instructions for different authbot deployment targets (PC, VirtualBox virtual machine, cloud vps, and various single-board computers) can be found in the /install directory.
