@@ -25,6 +25,8 @@ We choose to run authbot only on Linux.
 
 [QR-Code-generator](https://github.com/nayuki/QR-Code-generator)
 
+*All software (including the dependencies) have been installed in the binary files that can be downloaded (see install directory). All you need to do then is perform some configuration steps.*
+
 **Installation**
 
 Installation files describing specific installation instructions for different authbot deployment targets (PC, VirtualBox virtual machine, cloud vps, and various single-board computers) can be found in the /install directory.
