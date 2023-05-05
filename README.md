@@ -12,3 +12,17 @@ The authbot program can run on computers, desktop, laptop, single-board computer
 The user interface to authbot, is typically a messaging application such as [element](https://element.io/) that can be used on computers and mobile devices.
 
 So a user's authbot program can run anywhere in the world, needing only a network connection. Users communicate with their authbot via secure, end-to-end encrypted messaging, typically with a mobile device.
+
+# Installation/Dependencies
+
+authbot runs only on Linux.
+
+**Dependencies**
+
+[monero](https://github.com/monero-project/monero)
+
+[matrix-commander](https://github.com/8go/matrix-commander)
+
+[QR-Code-generator](https://github.com/nayuki/QR-Code-generator)
+
+**Installation**
