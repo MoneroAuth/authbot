@@ -26,3 +26,5 @@ authbot runs only on Linux.
 [QR-Code-generator](https://github.com/nayuki/QR-Code-generator)
 
 **Installation**
+
+The install.txt file describes specific installation instructions for different authbot deployment targets (PC, VirtualBox virtual machine, cloud vps, and various single-board computers).
