@@ -15,7 +15,7 @@ So a user's authbot program can run anywhere in the world, needing only a networ
 
 # Installation/Dependencies
 
-authbot runs only on Linux.
+We choose to run authbot only on Linux.
 
 **Dependencies**
 
