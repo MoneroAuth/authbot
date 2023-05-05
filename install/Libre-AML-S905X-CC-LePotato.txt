@@ -1,0 +1,5 @@
+Web link for the single-board computer: https://libre.computer/products/aml-s905x-cc/
+
+The Libre Computer-AML-S905X-CC (Le Potato) is a single-board computer used to run the authbot.
+The software (Ubuntu 22.04.2 LTS operating system, authbot, and its dependencies) are installed on
+a micro SD card image available at:
