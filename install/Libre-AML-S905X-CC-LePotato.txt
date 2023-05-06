@@ -68,7 +68,7 @@ sudo systemctl enable authbot.service
 sudo systemctl enable wallet.service
 sudo systemctl daemon-reload
 
-Then reboot the virtual machine and the authbot should be operational
+Then reboot the Le Potato and the authbot should be operational
  
 
 
