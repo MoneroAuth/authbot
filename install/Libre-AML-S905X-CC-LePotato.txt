@@ -1,10 +1,74 @@
 Web link for the single-board computer: https://libre.computer/products/aml-s905x-cc/
 
-The Libre Computer-AML-S905X-CC (Le Potato) is a single-board computer used to run the authbot.
-The software (Ubuntu 22.04.2 LTS operating system, authbot, and its dependencies) are installed on
-a micro SD card image available at: NOTE: need to provide link for downloads!
-
 The Ubuntu image we started with was: ubuntu-22.04.1-preinstalled-base-arm64+aml-s905x-cc.img.xz
 downloaded from: https://distro.libre.computer/ci/ubuntu/22.04/
+
+The Libre Computer-AML-S905X-CC (Le Potato) is a single-board computer used to run the authbot.
+The software (Ubuntu 22.04.2 LTS operating system, authbot, and its dependencies) are installed on
+a micro SD card image can be downloaded via ipfs. The ipfs content identifier is:QmNuqjFMcVAK27d7EAVFarZq2QQFDPveMGWSbLSbikCY1R
+Once downloaded the file (14.84 GiB) should be named: authbot-template.img
+Then the image written to a micro SD card (16 GB minimum).
+
+You can use dd to write the image to the micro SD card:
+sudo dd if=authbot-template.img of=/dev/sdd (use the /dev/??? that your micro SD Card is assigned) bs=1k conv=noerror
+
+Once the image is written, you can insert the micro SD card into the Le Potato, plug in your ethernet cable and power the Le Potato on.
+
+Once your booted up, some configuration needs to be performed.
+
+You will need to create a monero wallet in the /home/user/monero-v0.18.2.2/ directory
+For simplicity name the wallet: authbot
+Then place the wallet password in the pwd.txt file.
+
+Make sure you have an account on a matrix protocol (Synapse) homeserver (such as matrix.org)
+Once you have a working account, create a private room for your authbot, (You can locate your room id by going to the room "Settings",
+"Advanced" tab. "Room Information", "Internal Room ID") then perform the following:
+
+cd /home/user/authbot
+matrix-commander --login password
+(follow the prompts)
+
+assuming all goes well:
+
+matrix-commander --verify 
+(I find this is easier to perform (via emoji) on a mobile device)
+
+nano /home/user/authbot/authbot.py
+
+edit the following block:
+
+room = "room " # Enter the default room name you used in matrix-commander --ins>
+room_addr = '!' # Enter the room id of the room specified above
+room_id = 0 # Public facing digital id room variable
+anon_room = "room " # Enter your anonymous digital id private room name
+anon_room_addr = "!" # Enter the anonymous digital id private room id
+anon_room_id = 1 # Anonymous digital id room variable
+
+assuming your authbot room name is: my-authbot, change the block to:
+
+room = "room my-authbot" # Enter the default room name you used in matrix-commander --ins>
+room_addr = '<YOUR_ROOM_ID)' # Enter the room id of the room specified above
+room_id = 0 # Public facing digital id room variable
+anon_room = "room " # Enter your anonymous digital id private room name
+anon_room_addr = "!" # Enter the anonymous digital id private room id
+anon_room_id = 1 # Anonymous digital id room variable
+
+You can leave the anon info as it is for now. The authbot code currently provides support for two IDs (public facing, and an anonymous ID). 
+If you wish to use an anonymous ID, create another private room for the anonymous ID and enter it's name after "room ", for example if your 
+anon room name is "anon" then the line above should be:
+anon_room = "room anon"
+You will need to place the room_id in the anon_room_addr variable.
+
+You will also need to create a new subaddress in the authbot Monero wallet.
+
+Then:
+
+sudo systemctl enable monerod.service
+sudo systemctl enable authbot.service
+sudo systemctl enable wallet.service
+sudo systemctl daemon-reload
+
+Then reboot the virtual machine and the authbot should be operational
+ 
 
 
