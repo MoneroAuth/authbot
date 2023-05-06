@@ -13,6 +13,8 @@ The user interface to authbot, is typically a messaging application such as [ele
 
 So a user's authbot program can run anywhere in the world, needing only a network connection. Users communicate with their authbot via secure, end-to-end encrypted messaging, typically with a mobile device.
 
+A quick [video demonstration](https://moneroauth.org/videos/MoneroAuth-quick-demo.m4v) of securely authenticating to a web site using MoneroAuth
+
 # Installation/Dependencies
 
 We choose to run authbot only on Linux.
