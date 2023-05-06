@@ -9,7 +9,7 @@ The authbot is a self-sovereign identity assistant that utilizes the MoneroAuth 
 
 The authbot program can run on computers (desktop, laptop, single-board computers, virtual machines, and even in the cloud, on virtual private servers). Each authbot is privately owned by it's user and serves only it's user.
 
-The user interface to authbot, is typically a messaging application such as [element](https://element.io/) that can be used on computers and mobile devices.
+The user interface to authbot, is typically an end-yo-end encrypted messaging application such as [element](https://element.io/) that can be used on computers and mobile devices.
 
 So a user's authbot program can run anywhere in the world, needing only a network connection. Users communicate with their authbot via secure, end-to-end encrypted messaging, typically with a mobile device.
 
