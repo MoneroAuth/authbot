@@ -12,7 +12,7 @@ Then the image written to a micro SD card (16 GB minimum).
 You can use dd to write the image to the micro SD card:
 sudo dd if=authbot-template.img of=/dev/sdd (use the /dev/??? that your micro SD Card is assigned) bs=1k conv=noerror
 
-Once the image is written, you can insert the micro SD card into the Le Potato, plug in your ethernet cable and power the Le Potato on.
+Once the image is written, you can insert the micro SD card into the Le Potato, plug in your ethernet cable and power on.
 
 Once your booted up, some configuration needs to be performed.
 
