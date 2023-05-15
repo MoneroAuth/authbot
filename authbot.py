@@ -1,5 +1,5 @@
 ####################################################################################################################################################
-# AuthBot version 0.0.6 
+# AuthBot version 0.0.7 
 # Copyright (C) - 2023
 # by Douglas Alan Bebber
 #
@@ -30,15 +30,16 @@ download_media_path = '/home/user/authbot/mymedia/'
 message_capture_file = '/home/user/authbot/authbot.txt'
 matrix_commander_path = '/home/user/.local/bin/'
 # authbot currently only supports two unique IDs. One (id number 0) is for public facing usage, the other (id number 1) is for anonymous use.
-room = "room <NAME>" # Enter the default Matrix private room NAME you configured matrix-commander for
-room_addr = '<MATRIX_ROOM_ID>' # Enter the default Matrix private room ID you configured matrix-commander for
+room = "room my-authbot" # Enter the default Matrix private room NAME you configured matrix-commander for
+room_addr = '!ugTtuvgibUjzUKSUww:authbot.org' # Enter the default Matrix private room ID you configured matrix-commander for
 room_id = 0 # Public facing digital id room variable
-anon_room = "room <NAME>" # Enter anonymous digital id private room name
-anon_room_addr = "<MATRIX_ROOM_ID>" # Enter anonymous digital id private room id
+anon_room = "room max" # Enter anonymous digital id private room name
+anon_room_addr = "!ZORzWRbicCXEkMZHOH:matrix.org" # Enter anonymous digital id private room id
 anon_room_id = 1 # Anonymous digital id room variable
 
 def get_id(address_index):
 
+#   print("About to get the Monero address")
     url = "http://127.0.0.1:" + str(monero_wallet_rpc_port) + "/json_rpc"
     headers = {'content-type': 'application/json'}
     rpc_input = {
@@ -51,8 +52,10 @@ def get_id(address_index):
     print(json.dumps(rpc_input))
     response = requests.post(url,data=json.dumps(rpc_input),headers=headers)
     jd = response.json()
+#   print(jd['result']['subaddress_accounts'][0]['base_address'])
     id = jd['result']['addresses'][0]['address']
-
+#    account_index = jd['result']['subaddress_accounts'][0]['account_index']
+#    address_info = [id, account_index]
     return id
 
 def next_index():
@@ -72,7 +75,7 @@ def next_index():
     return len(accounts)
 
 def create_id(tag: str):
-# This function is not currently used.
+
     url = "http://127.0.0.1:" + str(monero_wallet_rpc_port) + "/json_rpc"
     headers = {'content-type': 'application/json'}
     rpc_input = {
@@ -85,11 +88,12 @@ def create_id(tag: str):
     response = requests.post(url,data=json.dumps(rpc_input),headers=headers)
     jd = response.json()
     id_info = [jd['result']['address'],jd['result']['account_index']]
-
+#   id_info[0] = jd['result']['address']
+#   id_info[1] = jd['result']['account_index']
     return id_info
 
 def tag_id(tag: str, id_index: int):
-# This function is not currently used.
+
     url = "http://127.0.0.1:" + str(monero_wallet_rpc_port) + "/json_rpc"
     headers = {'content-type': 'application/json'}
     rpc_input = {
@@ -123,7 +127,7 @@ def sign(challenge: str, id: str, id_index: int):
 
 
 def kill_commander():
-# Kill the matrix-commander...
+
     l = subprocess.check_output('ps aux | grep "matrix-commander"' , shell =True)
     res = l.split()
     print(res)
@@ -143,7 +147,7 @@ def kill_commander():
     return True
 
 def commander_up ():
-# Check to see if the matrix-commander is running. If not then start it.
+
 	l = subprocess.check_output('ps aux | grep "matrix-commander"' , shell =True)
 	res = l.split()
 	print('res:')
@@ -156,6 +160,7 @@ def commander_up ():
 	else:
 		print('Commander is NOT running')
 		com = matrix_commander_path + "matrix-commander --credentials " + authbot_path + "credentials.json --store " + authbot_path + "store --listen forever --listen-self --download-media " + download_media_path + " >" + message_capture_file + " &"
+		print(com)
 		try:
 			ret = subprocess.check_output(com, shell=True)
 		except subprocess.CalledProcessError as e:
@@ -193,7 +198,6 @@ def print_qr(qrcode: QrCode) -> None:
         print()
 
 def process_signature_verification(line: str,srch_pattern: str,room: str, id_number: int):
-# This function provides the signature_verification for MoneroAuth authentication...
 # check if string present on a current line
     print(line)
     report_room = room
@@ -250,6 +254,7 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
         print(buffer)
         print("Message line: " + line)
         sigVerificationURL = buffer['params']['signature_verification']
+#        sigVerificationURL =  buffer['params']['signature_verification'] + "?challenge=" + buffer['params']['challenge_string']
 #strip a trailing "/" if it exists...
         q = len(sigVerificationURL)
         sigVerificationURL = sigVerificationURL[0:q]
@@ -292,6 +297,11 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
         print("writing QR code to " + authbot_path + "output.png")
         svg2png(bytestring=sv,write_to=authbot_path + 'output.png')
         com = matrix_commander_path + 'matrix-commander --credentials ' + authbot_path + 'credentials.json --store ' + authbot_path + 'store -i ' + authbot_path + 'output.png -m "' + sigVerificationURL + '"' +" --room '" + report_room + "'"
+        with open(authbot_path + 'last_message.txt', 'r') as fp:
+            last_message = fp.readlines()
+        fp.close()
+        if com == last_message:
+            return False # Already sent the message.
         print(com)
         try:
             ret = subprocess.check_output(com, shell=True)
@@ -299,11 +309,13 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
             print("Error launching matrix-commander")
             print(e.output)
             return False
+        with open(authbot_path + "last_message.txt","w") as f:
+            f.write(com)
+        f.close()
         return True
 
 
 def process_id_lookup(line: str,srch_pattern: str,room: str, id_number: int):
-# This function provides the user with the two identites managed by the authbot.
 # check if string present on a current line
     print(line)
     report_room = room
@@ -317,6 +329,7 @@ def process_id_lookup(line: str,srch_pattern: str,room: str, id_number: int):
             print(srch_pattern + "NOT in " + room + "!")
             rdx = line.find(anon_room_addr)
             if rdx == -1:
+                print(srch_pattern + "NOT in " + anon_room_addr + "!")
                 return False
             else:
                 report_room = anon_room_addr
@@ -337,6 +350,86 @@ def process_id_lookup(line: str,srch_pattern: str,room: str, id_number: int):
             return False
         return True
 
+def process_json_message(line: str,srch_pattern: str,room: str, id_number: int):
+# check if string present on a current line
+    print(line)
+    report_room = room
+    idx = line.find(srch_pattern)
+    print(idx)
+    if idx != -1:
+        print("Found " + srch_pattern + "...")
+        print(line)
+        rdx = line.find(room_addr) # room_addr?
+        if rdx == -1:
+            print(srch_pattern + "NOT in " + room + "!")
+            rdx = line.find(anon_room_addr)
+            if rdx == -1:
+                return False
+            else:
+                report_room = anon_room_addr
+        print("In correct room, Killing matrix-commander process...")
+        retval = kill_commander()
+# Make sure there is a challenge_string...
+        idx = line.find("challenge_string")
+        if idx == -1:
+            print("No challenge_string, exiting.")
+            exit(1) 
+# Now pull the sender username from the message...
+        print("line: " + line)
+        jbx = line.find('{"json')
+        jex = line.find("}}")
+        print("Start:" + str(jbx))
+        print("End:" + str(jex))
+        js = line[jbx:jex+2]
+#js is the json string...
+        buffer = json.loads(js)
+        print("json string:")
+        print(buffer)
+        print("Message line: " + line)
+        challenge = buffer['params']['challenge_string']
+#int/str issue
+        challenge = str(buffer['params']['challenge_string'])
+        print("Challenge String:")
+        print(challenge)
+        if report_room == room_addr:
+            address = get_id(room_id)
+            si = room_id
+        if report_room == anon_room_addr:
+            address = get_id(anon_room_id)
+            si = anon_room_id
+        print("Challenge: " + challenge)
+        print("Address: " + address)
+        signature = sign(challenge, address, si)
+        js = '{"json":"2.0","method":"signature_verification","params":{"signature":"' + signature + '"'
+        for x in buffer['params']:
+            js = js + ',"' + x + '":"' + buffer['params'][x] + '"'
+        js = js + '}}'
+        print("json message: " + js)
+#        text = '{"json":"2.0","method":"digital_signature","params":{"?challenge":"' + challenge + '","address":"' + address + '"signature":"' + signature + '"}}'
+#        print(text)
+        #errcorlvl = QrCode.Ecc.HIGH  # Error correction level
+        # To obtain larger QR Code in the element message window...
+        errcorlvl = QrCode.Ecc.LOW  # Error correction level
+
+        # Make and print the QR Code symbol
+#            qr = QrCode.encode_text(text, errcorlvl)
+#Make QR code of Signature Verification URL...
+        print(js)
+        qr = QrCode.encode_text(js, errcorlvl)
+        print_qr(qr)
+        print(to_svg_str(qr,4))
+        sv = to_svg_str(qr,4)
+        print("writing QR code to " + authbot_path + "output.png")
+        svg2png(bytestring=sv,write_to=authbot_path + 'output.png')
+        com = matrix_commander_path + 'matrix-commander --credentials ' + authbot_path + 'credentials.json --store ' + authbot_path + 'store -i ' + authbot_path + "output.png -m '" + js + "'" + " --room '" + report_room + "'"
+        print(com)
+        try:
+            ret = subprocess.check_output(com, shell=True)
+        except subprocess.CalledProcessError as e:
+            print("Error launching matrix-commander")
+            print(e.output)
+            return False
+        return True
 
 # importing matrix_commander module
 try:
@@ -379,6 +472,7 @@ with open(message_capture_file, 'r') as fp:
         print("about to call: process_signature_verification...")
         sr = process_signature_verification(line, message_type, room_addr,id_number)
         sr = process_id_lookup(line,"id?",room_addr, id_number) 
+        sr = process_json_message(line, "resource_mgr_id", room_addr,id_number)
         r = commander_up()
 fp.close()
 ########################################################### For systemd debugging...
