@@ -1,5 +1,5 @@
 ####################################################################################################################################################
-# AuthBot version 0.0.7 
+# AuthBot version 0.0.8
 # Copyright (C) - 2023
 # by Douglas Alan Bebber
 #
@@ -22,7 +22,7 @@ from qrcodegen import QrCode, QrSegment
 import random
 from cairosvg import svg2png
 import subprocess
-
+import sqlite3
 ###################### Variables ######################
 monero_wallet_rpc_port = 18089
 authbot_path = '/home/user/authbot/'
@@ -30,12 +30,53 @@ download_media_path = '/home/user/authbot/mymedia/'
 message_capture_file = '/home/user/authbot/authbot.txt'
 matrix_commander_path = '/home/user/.local/bin/'
 # authbot currently only supports two unique IDs. One (id number 0) is for public facing usage, the other (id number 1) is for anonymous use.
-room = "room my-authbot" # Enter the default Matrix private room NAME you configured matrix-commander for
-room_addr = '!ugTtuvgibUjzUKSUww:authbot.org' # Enter the default Matrix private room ID you configured matrix-commander for
+room = "room " # Enter the default Matrix private room NAME you configured matrix-commander for
+room_addr = "<ROOM_ID>" # Enter the default Matrix private room ID you configured matrix-commander for
 room_id = 0 # Public facing digital id room variable
-anon_room = "room max" # Enter anonymous digital id private room name
-anon_room_addr = "!ZORzWRbicCXEkMZHOH:matrix.org" # Enter anonymous digital id private room id
+anon_room = "room " # Enter anonymous digital id private room name
+anon_room_addr = "<ROOM_ID>" # Enter anonymous digital id private room id
 anon_room_id = 1 # Anonymous digital id room variable
+
+def db_challenge(cs: str):
+	try:
+		dbconnect = sqlite3.connect(authbot_path + "authbot")
+		dbconnect.row_factory = sqlite3.Row
+		cursor = dbconnect.cursor()
+		sql = "SELECT challenge_string, issued FROM challenge WHERE challenge_string = '" + cs + "'"
+		print(sql)
+		cursor.execute(sql)
+		rs = cursor.fetchone()
+		if rs == None:
+			print('Empty result set!')
+			dbconnect.close()
+			return False
+		if rs['challenge_string'] == cs:
+			print(rs['challenge_string'], rs['issued'])
+			print("Reuse Detected. Ignoring!")
+			dbconnect.close()
+			return True
+		dbconnect.close()
+		return False
+	except sqlite3.Error as error:
+		print("Failed to query database.", error)
+
+def store_challenge(challenge_string: str):
+	try:
+		dbconnect = sqlite3.connect(authbot_path + "authbot")
+		cursor = dbconnect.cursor()
+		sql = "INSERT INTO challenge(challenge_string) VALUES('" + challenge_string + "')"
+		print(sql)
+		count = cursor.execute(sql)
+		dbconnect.commit()
+		cursor.close()
+		return True
+	except sqlite3.Error as error:
+		print("Failed to insert record into the database.", error)
+	finally:
+		if dbconnect:
+			dbconnect.close()
+			print("Database connection closed.")
+			return False
 
 def get_id(address_index):
 
@@ -206,7 +247,7 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
     if idx != -1:
         print("Found signature_verification...")
         print(line)
-        rdx = line.find(room_addr) # room_addr?
+        rdx = line.find(room) # room_addr?
         if rdx == -1:
             print(srch_pattern + "NOT in " + room + "!")
             rdx = line.find(anon_room_addr)
@@ -221,27 +262,6 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
         if idx == -1:
             print("No challenge_string, exiting.")
             exit(1) 
-# Now pull the sender username from the message...
-        print("looking for sender in line...")
-        print("line: " + line)
-        rdx = line.find("sender")
-        if rdx == -1:
-            print("Can't find sender in line, exiting!")
-            return False
-        bdx = line.find("@",rdx)
-        if bdx == -1:
-            print("Can't find @ in line, exiting!")
-            return False
-        edx = line.find("]",bdx)
-        if edx == -1:
-            return False
-        username = line[bdx:edx]
-        username = username.strip()
-        bx = username.find("@")
-        ex = username.find(":",bx)
-        wallet_label = username[bx+1:ex]
-        print("wallet label: " + wallet_label)
-        print("username: " + username)
         print(srch_pattern, 'string exists in file')
         jbx = line.find('{"json')
         jex = line.find("}}")
@@ -252,9 +272,18 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
         buffer = json.loads(js)
         print("json string:")
         print(buffer)
+        cs = buffer['params']['challenge_string']
+        ce = db_challenge(cs)
+        if ce: # If challenge_string is already in the db, then stop processing this message!
+            print(ce)
+            print("challenge_string: " + cs + " is already in the database!")
+            return False
+        if ce == 'DBError!':
+            print("Database error!")
+            return False
         print("Message line: " + line)
         sigVerificationURL = buffer['params']['signature_verification']
-#        sigVerificationURL =  buffer['params']['signature_verification'] + "?challenge=" + buffer['params']['challenge_string']
+
 #strip a trailing "/" if it exists...
         q = len(sigVerificationURL)
         sigVerificationURL = sigVerificationURL[0:q]
@@ -297,11 +326,8 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
         print("writing QR code to " + authbot_path + "output.png")
         svg2png(bytestring=sv,write_to=authbot_path + 'output.png')
         com = matrix_commander_path + 'matrix-commander --credentials ' + authbot_path + 'credentials.json --store ' + authbot_path + 'store -i ' + authbot_path + 'output.png -m "' + sigVerificationURL + '"' +" --room '" + report_room + "'"
-        with open(authbot_path + 'last_message.txt', 'r') as fp:
-            last_message = fp.readlines()
-        fp.close()
-        if com == last_message:
-            return False # Already sent the message.
+        retval = store_challenge(cs)
+
         print(com)
         try:
             ret = subprocess.check_output(com, shell=True)
@@ -309,9 +335,7 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
             print("Error launching matrix-commander")
             print(e.output)
             return False
-        with open(authbot_path + "last_message.txt","w") as f:
-            f.write(com)
-        f.close()
+
         return True
 
 
@@ -385,6 +409,15 @@ def process_json_message(line: str,srch_pattern: str,room: str, id_number: int):
         buffer = json.loads(js)
         print("json string:")
         print(buffer)
+        cs = buffer['params']['challenge_string']
+        ce = db_challenge(cs)
+        if ce: # If challenge_string is already in the db, then stop processing this message!
+            print(ce)
+            print("challenge_string: " + cs + " is already in the database!")
+            return False
+        if ce == 'DBError!':
+            print("Database error!")
+            return False
         print("Message line: " + line)
         challenge = buffer['params']['challenge_string']
 #int/str issue
@@ -405,14 +438,12 @@ def process_json_message(line: str,srch_pattern: str,room: str, id_number: int):
             js = js + ',"' + x + '":"' + buffer['params'][x] + '"'
         js = js + '}}'
         print("json message: " + js)
-#        text = '{"json":"2.0","method":"digital_signature","params":{"?challenge":"' + challenge + '","address":"' + address + '"signature":"' + signature + '"}}'
-#        print(text)
+
         #errcorlvl = QrCode.Ecc.HIGH  # Error correction level
         # To obtain larger QR Code in the element message window...
         errcorlvl = QrCode.Ecc.LOW  # Error correction level
 
-        # Make and print the QR Code symbol
-#            qr = QrCode.encode_text(text, errcorlvl)
+       
 #Make QR code of Signature Verification URL...
         print(js)
         qr = QrCode.encode_text(js, errcorlvl)
@@ -422,6 +453,7 @@ def process_json_message(line: str,srch_pattern: str,room: str, id_number: int):
         print("writing QR code to " + authbot_path + "output.png")
         svg2png(bytestring=sv,write_to=authbot_path + 'output.png')
         com = matrix_commander_path + 'matrix-commander --credentials ' + authbot_path + 'credentials.json --store ' + authbot_path + 'store -i ' + authbot_path + "output.png -m '" + js + "'" + " --room '" + report_room + "'"
+        retval = store_challenge(cs)
         print(com)
         try:
             ret = subprocess.check_output(com, shell=True)
