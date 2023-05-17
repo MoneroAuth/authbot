@@ -24,6 +24,7 @@ from cairosvg import svg2png
 import subprocess
 import sqlite3
 ###################### Variables ######################
+# Need to place these in an external file - DAB 2023-05-18
 monero_wallet_rpc_port = 18089
 authbot_path = '/home/user/authbot/'
 download_media_path = '/home/user/authbot/mymedia/'
