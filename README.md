@@ -27,6 +27,8 @@ We choose to run authbot only on Linux.
 
 [QR-Code-generator](https://github.com/nayuki/QR-Code-generator)
 
+[SQLite](https://sqlite.org/index.html)
+
 *All software (including the dependencies) have been installed in the binary files that can be downloaded (see install directory). All you need to do then is perform some configuration steps.*
 
 **Installation**
