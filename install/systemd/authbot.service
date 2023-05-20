@@ -1,0 +1,13 @@
+[Unit]
+Description=authbot.service
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStartPre=/bin/sleep 5
+ExecStart=/home/user/authbot/authbot.sh
+User=user
+Group=user
+
+[Install]
+WantedBy=multi-user.target
