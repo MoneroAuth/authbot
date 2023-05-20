@@ -1,0 +1,13 @@
+[Unit]
+Description=wallet.service
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStartPre=/bin/sleep 10
+ExecStart=/home/user/authbot/wallet-loop.sh
+User=user
+Group=user
+
+[Install]
+WantedBy=multi-user.target
