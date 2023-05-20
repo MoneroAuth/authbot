@@ -1,0 +1,15 @@
+[Unit]
+Description=monerod.service
+
+[Service]
+Type=forking
+ExecStart=/home/user/monero-v0.18.2.2/monerod --offline --detach --restricted-rpc --pidfile /tmp/monerod.pid
+ExecStop=/home/user/monero-v0.18.2.2/monerod exit
+PIDFile=/tmp/monerod.pid
+User=user
+Group=user
+Restart=always
+RestartSec=90
+
+[Install]
+WantedBy=multi-user.target
