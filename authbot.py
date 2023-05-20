@@ -1,5 +1,5 @@
 ####################################################################################################################################################
-# AuthBot version 0.0.8
+# AuthBot version 0.0.9
 # Copyright (C) - 2023
 # by Douglas Alan Bebber
 #
@@ -14,7 +14,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 ####################################################################################################################################################
+from datetime import date
+from datetime import timedelta
 import sys
+import os
 import json
 import requests
 from typing import List
@@ -23,20 +26,26 @@ import random
 from cairosvg import svg2png
 import subprocess
 import sqlite3
-###################### Variables ######################
-# Need to place these in an external file - DAB 2023-05-18
-monero_wallet_rpc_port = 18089
-authbot_path = '/home/user/authbot/'
-download_media_path = '/home/user/authbot/mymedia/'
-message_capture_file = '/home/user/authbot/authbot.txt'
-matrix_commander_path = '/home/user/.local/bin/'
-# authbot currently only supports two unique IDs. One (id number 0) is for public facing usage, the other (id number 1) is for anonymous use.
-room = "room " # Enter the default Matrix private room NAME you configured matrix-commander for
-room_addr = "<ROOM_ID>" # Enter the default Matrix private room ID you configured matrix-commander for
-room_id = 0 # Public facing digital id room variable
-anon_room = "room " # Enter anonymous digital id private room name
-anon_room_addr = "<ROOM_ID>" # Enter anonymous digital id private room id
-anon_room_id = 1 # Anonymous digital id room variable
+
+authbot_version = "0.0.9"
+
+def purge_challenge(purge_date: str):
+	try:
+		dbconnect = sqlite3.connect(authbot_path + "authbot")
+		cursor = dbconnect.cursor()
+		sql = "DELETE FROM challenge WHERE issued > '" + purge_date + "'"
+		print(sql)
+		count = cursor.execute(sql)
+		dbconnect.commit()
+		cursor.close()
+		return True
+	except sqlite3.Error as error:
+		print("Failed to remove records.", error)
+	finally:
+		if dbconnect:
+			dbconnect.close()
+			print("Database connection closed.")
+			return False
 
 def db_challenge(cs: str):
 	try:
@@ -284,7 +293,7 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
             return False
         print("Message line: " + line)
         sigVerificationURL = buffer['params']['signature_verification']
-
+#        sigVerificationURL =  buffer['params']['signature_verification'] + "?challenge=" + buffer['params']['challenge_string']
 #strip a trailing "/" if it exists...
         q = len(sigVerificationURL)
         sigVerificationURL = sigVerificationURL[0:q]
@@ -328,7 +337,11 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
         svg2png(bytestring=sv,write_to=authbot_path + 'output.png')
         com = matrix_commander_path + 'matrix-commander --credentials ' + authbot_path + 'credentials.json --store ' + authbot_path + 'store -i ' + authbot_path + 'output.png -m "' + sigVerificationURL + '"' +" --room '" + report_room + "'"
         retval = store_challenge(cs)
-
+#        with open(authbot_path + 'last_message.txt', 'r') as fp:
+#            last_message = fp.readlines()
+#        fp.close()
+#        if com == last_message:
+#            return False # Already sent the message.
         print(com)
         try:
             ret = subprocess.check_output(com, shell=True)
@@ -336,9 +349,43 @@ def process_signature_verification(line: str,srch_pattern: str,room: str, id_num
             print("Error launching matrix-commander")
             print(e.output)
             return False
-
+#        with open(authbot_path + "last_message.txt","w") as f:
+#            f.write(com)
+#        f.close()
+        yesterday = date.today() - timedelta(days=1)
+        retval = purge_challenge(str(yesterday))
         return True
 
+def process_version(line: str,srch_pattern: str,room: str, id_number: int):
+# check if string present on a current line
+    print(line)
+    report_room = room
+    idx = line.find(srch_pattern)
+    print(idx)
+    if idx != -1:
+        print("Found " + srch_pattern)
+        print(line)
+        rdx = line.find(room_addr) # room_addr?
+        if rdx == -1:
+            print(srch_pattern + "NOT in " + room + "!")
+            rdx = line.find(anon_room_addr)
+            if rdx == -1:
+                print(srch_pattern + "NOT in " + anon_room_addr + "!")
+                return False
+            else:
+                report_room = anon_room_addr
+        print("In correct room, Killing matrix-commander process...")
+        retval = kill_commander()
+        com = matrix_commander_path + 'matrix-commander --credentials ' + authbot_path + 'credentials.json --store ' + authbot_path + 'store -m "authbot version: ' + authbot_version + '"' + " --room '" + report_room + "'"
+        print(com)
+
+        try:
+            ret = subprocess.check_output(com, shell=True)
+        except subprocess.CalledProcessError as e:
+            print("Error launching matrix-commander")
+            print(e.output)
+            return False
+        return True
 
 def process_id_lookup(line: str,srch_pattern: str,room: str, id_number: int):
 # check if string present on a current line
@@ -439,12 +486,14 @@ def process_json_message(line: str,srch_pattern: str,room: str, id_number: int):
             js = js + ',"' + x + '":"' + buffer['params'][x] + '"'
         js = js + '}}'
         print("json message: " + js)
-
+#        text = '{"json":"2.0","method":"digital_signature","params":{"?challenge":"' + challenge + '","address":"' + address + '"signature":"' + signature + '"}}'
+#        print(text)
         #errcorlvl = QrCode.Ecc.HIGH  # Error correction level
         # To obtain larger QR Code in the element message window...
         errcorlvl = QrCode.Ecc.LOW  # Error correction level
 
-       
+        # Make and print the QR Code symbol
+#            qr = QrCode.encode_text(text, errcorlvl)
 #Make QR code of Signature Verification URL...
         print(js)
         qr = QrCode.encode_text(js, errcorlvl)
@@ -487,6 +536,14 @@ except:
 #log_file = open("/home/user/authbot/authbot.log","w")
 #sys.stdout = log_file
 ###########################################################
+# Read config file and initialize variables...
+authbot_path = os.getenv("authbot_path")
+with open(authbot_path + 'authbot.json') as f:
+    data = json.load(f)
+
+for x in data['params']:
+    vars()[x] = data['params'][x]
+
 id_number = 0
 print("Checking to see if matrix-commander is running...")
 
@@ -506,6 +563,7 @@ with open(message_capture_file, 'r') as fp:
         sr = process_signature_verification(line, message_type, room_addr,id_number)
         sr = process_id_lookup(line,"id?",room_addr, id_number) 
         sr = process_json_message(line, "resource_mgr_id", room_addr,id_number)
+        sr = process_version(line,"version?",room_addr, id_number) 
         r = commander_up()
 fp.close()
 ########################################################### For systemd debugging...
