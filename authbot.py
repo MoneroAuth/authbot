@@ -545,11 +545,11 @@ with open(authbot_path + 'authbot.json') as f:
 for x in data['params']:
     vars()[x] = data['params'][x]
 
+# Room to process digital signing...
 id_number = 0
 print("Checking to see if matrix-commander is running...")
 
 r = commander_up()
-# Room to process digital signing...
 ### Currently supports two digital ids. One public facing id, the other an anonymous id.
 ### id_number = 0 is the public facing id
 ### id_number = 1 is the anonymous id
