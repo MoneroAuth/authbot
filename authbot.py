@@ -28,6 +28,7 @@ from cairosvg import svg2png
 import subprocess
 import sqlite3
 
+# Replaced variables with a configuration file (authbot.json)
 authbot_version = "0.0.9"
 
 def purge_challenge(purge_date: str):
