@@ -5,7 +5,7 @@ downloaded from: https://distro.libre.computer/ci/ubuntu/22.04/
 
 The Libre Computer-AML-S905X-CC (Le Potato) is a single-board computer used to run the authbot.
 The software (Ubuntu 22.04.2 LTS operating system, authbot, and its dependencies) are installed on
-a micro SD card image that can be downloaded via ipfs. The ipfs content identifier is:QmTCAq8cyPEoNLdKqgdD57UnqBdnyQpdvH2BwJp9Lox8RA
+a micro SD card image that can be downloaded via ipfs. The ipfs content identifier is:QmTZmMczpjS2HGVj6zwhwNqk2cze8XPcTP7mX1gC6yu3dX
 Once downloaded the file (1.2 GiB) should be expanded (bzip2) and named: authbot-template.img
 Then the image written to a micro SD card (16 GB minimum).
 
