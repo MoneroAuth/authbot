@@ -5,8 +5,8 @@ downloaded from: https://distro.libre.computer/ci/ubuntu/22.04/
 
 The Libre Computer-AML-S905X-CC (Le Potato) is a single-board computer used to run the authbot.
 The software (Ubuntu 22.04.2 LTS operating system, authbot, and its dependencies) are installed on
-a micro SD card image that can be downloaded via ipfs. The ipfs content identifier is:QmTZmMczpjS2HGVj6zwhwNqk2cze8XPcTP7mX1gC6yu3dX
-Once downloaded the file (1.2 GiB) should be expanded (bzip2) and named: authbot-template.img
+a micro SD card image that can be downloaded via ipfs. The ipfs content identifier is:QmdVrdKfW3hCnef82rFMuZ5Xs6h1rVpPn24GXe5od9yspW
+Once downloaded the file (named:authbot-template.img.bz2, size: 1.47 GiB) should be expanded (bzip2) and named: authbot-template.img
 Then the image written to a micro SD card (16 GB minimum).
 
 You can use dd to write the image to the micro SD card:
@@ -18,12 +18,59 @@ Once your booted up, some configuration needs to be performed.
 
 You will need to create a monero wallet in the /home/user/monero-v0.18.2.2/ directory
 For simplicity name the wallet: authbot
-Then place the wallet password in the pwd.txt file.
+store the wallet information (25-word mnemonic and password) in a secure offline location in case you need to recreate the wallet.
+Then place the wallet password in the pwd.txt file in the /home/user/monero-v0.18.2.2/ directory.
 
-Make sure you have an account on a matrix protocol (Synapse) homeserver (such as matrix.org)
-Once you have a working account, create a private room for your authbot, (You can locate your room id by going to the room "Settings",
-"Advanced" tab. "Room Information", "Internal Room ID") then perform the following:
+Start the wallet service by issuing the following commands:
+sudo systemctl enable wallet.service
+sudo systemctl daemon-reload
+sudo systemctl start wallet.service
 
+Next create an anon ID in your wallet:
+curl http://127.0.0.1:18089/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"create_address","params":{"account_index":0,"label":"anon","count":1}}' -H 'Content-Type: application/json''
+
+Then create an ID for your authbot:
+curl http://localhost:18089/json_rpc -d '{"jsonrpc":"2.0","id":"1","method":"create_account","params":{"label":"authbot"}}' -H 'Content-Type: application/json''
+
+
+Make sure you have an account on a matrix protocol (Synapse) homeserver (such as matrix.org). You can goto https://app.element.io to create a new account. You should create 2 accounts, one for you and one for your authbot.
+
+Login to your authbot account in https://app.element.io
+create a new private room for your authbot, (You can locate your room id by going to the room "Settings",
+"Advanced" tab. "Room Information", "Internal Room ID"). You will want to save your security key for reference in subsequent sessions.
+
+Next configure your authbot (Use the info for the matrix account you created for your authbot):
+cd /home/user/matrix-eno-bot
+nano config.yaml
+uncomment and set the following variables with your values:
+
+command_prefix (your authbot ID from the step above (Then create an ID for your authbot:). Place the ID inside double quotes.
+user_id
+user_password
+homeserver_url
+device_id (Uppercase,just create one. Example:AUTHBOT)
+device_name (provide a name. Example: authbot)
+
+Save the config.yaml file
+Then:
+Login to your authbot matrix account.
+On the authbot computer:
+cd /home/user/matrix-eno-bot
+./main.py config.yaml
+
+Your app.element.io session will ask you if you just logged in. Respond in the affirmative.
+Next click the icon ("i" in a circle) in the upper right of the web page.
+Click on the user_id, then look down in the area labeled "SECURITY". Click on the unverified authbot device, then confirm with emojis.
+You will need to interactively verify in the web page as well as your authbot computer terminal.
+
+Once you have confirmed the authbot device, perform the following commands on your authbot computer:
+sudo systemctl enable matrix-eno-bot.service
+sudo systemctl daemon-reload
+sudo systemctl start matrix-eno-bot.service
+
+Now your authbot will automatically run at startup.
+
+Next, perform the following commands:
 cd /home/user/authbot
 matrix-commander --login password
 (follow the prompts)
@@ -31,42 +78,11 @@ matrix-commander --login password
 assuming all goes well:
 
 matrix-commander --verify 
-(I find this is easier to perform (via emoji) on a mobile device)
 
-nano /home/user/authbot/authbot.py
+Using the web https://app.element.io and your authbot computer terminal, verify the matrix-commander device (like you did above for the authbot)
 
-edit the following block:
-
-room = "room " # Enter the default room name you used in matrix-commander --ins>
-room_addr = '!' # Enter the room id of the room specified above
-room_id = 0 # Public facing digital id room variable
-anon_room = "room " # Enter your anonymous digital id private room name
-anon_room_addr = "!" # Enter the anonymous digital id private room id
-anon_room_id = 1 # Anonymous digital id room variable
-
-assuming your authbot room name is: my-authbot, change the block to:
-
-room = "room my-authbot" # Enter the default room name you used in matrix-commander --ins>
-room_addr = '<YOUR_ROOM_ID)' # Enter the room id of the room specified above
-room_id = 0 # Public facing digital id room variable
-anon_room = "room " # Enter your anonymous digital id private room name
-anon_room_addr = "!" # Enter the anonymous digital id private room id
-anon_room_id = 1 # Anonymous digital id room variable
-
-You can leave the anon info as it is for now. The authbot code currently provides support for two IDs (public facing, and an anonymous ID). 
-If you wish to use an anonymous ID, create another private room for the anonymous ID and enter it's name after "room ", for example if your 
-anon room name is "anon" then the line above should be:
-anon_room = "room anon"
-You will need to place the room_id in the anon_room_addr variable.
-
-You will also need to create a new subaddress in the authbot Monero wallet.
-
-Then:
-
-sudo systemctl enable monerod.service
-sudo systemctl enable authbot.service
-sudo systemctl enable wallet.service
-sudo systemctl daemon-reload
+Finally, edit the authbot.json file in the /home/user/authbot directory.
+change the "authbot_owner" value to your (not your authbot) matrix user_id
 
 Then reboot the Le Potato and the authbot should be operational
  
