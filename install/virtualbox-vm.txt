@@ -1,3 +1,8 @@
+##################################################################
+# These instructions are for the old (deprecated) authbot design #
+##################################################################
+An updated for the new design will be provided soon.
+
 An authbot virtualbox vm template can be downloaded via ipfs. The ipfs content identifier is: QmQtZyQQEusSy2t4zT8VRm6z6oCp3jhUaqfgCS5som6wD9
 The file should be renamed to authbot-v0.0.6.ova in order for it to be imported into VirtualBox.
 The SHA 256 verification hash for the file is: 8b98f618a19fbd5f3d904b6671eab4c378a5ee1869fd0051199698cd01237c7f
