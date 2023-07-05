@@ -1,0 +1,21 @@
+[Unit]
+Description=matrix-eno-bot
+
+[Service]
+# change user name to fit your needs
+WorkingDirectory=/home/user/matrix-eno-bot/
+User=user
+Group=user
+Environment=PYTHONUNBUFFERED=1
+# change this to match your server's timezone
+Environment=TZ=UTC
+# change this PATH to fit your needs
+Environment=PATH=/home/user/matrix-eno-bot:/home/user/matrix-eno-bot/eno/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# change this PATH to fit your PATH
+ExecStart=/home/user/matrix-eno-bot/main.py /home/user/matrix-eno-bot/config.yaml
+ExecStop=/bin/kill -9 $MAINPID
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
