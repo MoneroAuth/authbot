@@ -13,7 +13,7 @@ The user interface to authbot, is typically an end-to-end encrypted messaging ap
 
 So a user's authbot program can run anywhere in the world, needing only a network connection. Users communicate with their authbot via secure, end-to-end encrypted messaging, typically with a mobile device.
 
-A quick [video demonstration](https://moneroauth.org/videos/MoneroAuth-quick-demo.m4v) of securely authenticating to a web site using MoneroAuth
+A quick [video demonstration](https://moneroauth.org/videos/WebAuth-take2.m4v) of securely authenticating to a web site using MoneroAuth
 
 # Installation/Dependencies
 
@@ -22,6 +22,8 @@ We choose to run authbot only on Linux.
 **Dependencies**
 
 [monero](https://github.com/monero-project/monero)
+
+[matrix-eno-bot](https://github.com/8go/matrix-eno-bot)
 
 [matrix-commander](https://github.com/8go/matrix-commander)
 
