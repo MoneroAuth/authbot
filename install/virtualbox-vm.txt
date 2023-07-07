@@ -1,7 +1,3 @@
-##################################################################
-# These instructions are for the old (deprecated) authbot design #
-##################################################################
-An updated for the new design will be provided soon.
 
 An authbot virtualbox vm template can be downloaded via ipfs. The ipfs content identifier is:QmdYgwjJYEZHf35GTzpDy66j9WY91KUmhrEz9ZGc4h5VAt
 
