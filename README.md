@@ -19,6 +19,8 @@ A quick [video demonstration](https://moneroauth.org/videos/WebAuth-take2.m4v) o
 
 A quick [video demonstration](https://moneroauth.org/videos/MoneroAuth-SignVerify-FinalCut.m4v) of general purpose digital signature services using MoneroAuth
 
+[MoneroAuth Resource Management](https://moneroauth.org/videos/kdenlive-ResourceManagement2.m4v). (This is a rough-cut video. A better one will be provided soon).
+
 # Installation/Dependencies
 
 We choose to run authbot only on Linux.
