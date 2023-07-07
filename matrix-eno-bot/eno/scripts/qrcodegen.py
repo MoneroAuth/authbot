@@ -907,4 +907,3 @@ class DataTooLongError(ValueError):
 	- Change the text to fit the character set of a particular segment mode (e.g. alphanumeric).
 	- Propagate the error upward to the caller/user."""
 	pass
-

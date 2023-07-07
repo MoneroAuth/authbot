@@ -1,0 +1,1 @@
+{"json":"2.0","method":"configuration","params":{"authbot_owner":"@doug:authbot.org","monero_wallet_rpc_port":18089,"matrix_eno_bot_path":"/home/user/matrix-eno-bot/","matrix_commander_path":"/home/user/.local/bin/","authbot_path":"/home/user/authbot/","public_id_room_id":"!ugTtuvgibUjzUKSUww:authbot.org","anon_id_room_id":"!ZORzWRbicCXEkMZHOH:matrix.org"}}
