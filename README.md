@@ -13,7 +13,11 @@ The user interface to authbot, is typically an end-to-end encrypted messaging ap
 
 So a user's authbot program can run anywhere in the world, needing only a network connection. Users communicate with their authbot via secure, end-to-end encrypted messaging, typically with a mobile device.
 
+# Videos
+
 A quick [video demonstration](https://moneroauth.org/videos/WebAuth-take2.m4v) of securely authenticating to a web site using MoneroAuth
+
+A quick [video demonstration](https://moneroauth.org/videos/MoneroAuth-SignVerify-FinalCut.m4v) of general purpose digital signature services using MoneroAuth
 
 # Installation/Dependencies
 
