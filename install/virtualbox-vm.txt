@@ -1,4 +1,3 @@
-
 An authbot virtualbox vm template can be downloaded via ipfs. The ipfs content identifier is:QmdYgwjJYEZHf35GTzpDy66j9WY91KUmhrEz9ZGc4h5VAt
 
 The file should be renamed to authbot-v0.0.6.2.ova in order for it to be imported into VirtualBox.
@@ -11,6 +10,11 @@ The virtual machine has port forwarding enabled so you should be able to ssh to 
 ssh user@127.0.0.1 -p 2222
 
 You will need to create a monero wallet in the /home/user/monero-v0.18.2.2/ directory
+I prefer to use monero-wallet-cli to create the wallet:
+
+cd /home/user/monero-v0.18.2.2
+./monero-wallet-cli
+
 For simplicity name the wallet: authbot
 Then place the wallet password in the pwd.txt file.
 

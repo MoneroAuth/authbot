@@ -14,9 +14,14 @@ sudo dd if=authbot-template.img of=/dev/sdd (use the /dev/??? that your micro SD
 
 Once the image is written, you can insert the micro SD card into the Le Potato, plug in your ethernet cable and power on.
 
-Once your booted up, some configuration needs to be performed.
+Once your booted up, some configuration needs to be performed:
 
 You will need to create a monero wallet in the /home/user/monero-v0.18.2.2/ directory
+I prefer to use monero-wallet-cli to create the wallet:
+
+cd /home/user/monero-v0.18.2.2
+./monero-wallet-cli
+
 For simplicity name the wallet: authbot
 store the wallet information (25-word mnemonic and password) in a secure offline location in case you need to recreate the wallet.
 Then place the wallet password in the pwd.txt file in the /home/user/monero-v0.18.2.2/ directory.
