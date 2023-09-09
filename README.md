@@ -23,6 +23,16 @@ A quick [video demonstration](https://moneroauth.org/videos/MoneroAuth-SignVerif
 
 A quick [video demonstration](https://moneroauth.org/videos/nym-demo2.m4v) of [Nym network](https://nymtech.net) integration with the authbot.
 
+Three windows in the video:
+
++ Browser with element.io (lower window)
++ Terminal window connected to a laptop computer acting as a Nym service provider (upper left)
++ Terminal window connected to my authbot running the Nym web socket client (upper right)
+
+In each (authbot computer and the Nym service provider laptop computer) I'm running a Nym websocket client.
+The Nym service provider is also running a python program representing the service provider's service. Here it is just echoing the message received to the terminal.
+
+A message is sent to the service provider by sending the authbot a command __nym_send__. The __nym_send__ command takes two arguments: the Nym address of the Nym service provider, and the message to send. The authbot command then passes the arguments to the authbot's nym-client websocket interface which sends the message to the service provider over the Nym network. The response from the Nym service provider is displayed in the Matrix private room.
 
 # Installation/Dependencies
 
